@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { motion, type Variants } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { Github, Linkedin, Mail, Phone, ArrowUpRight, Download } from "lucide-react";
 import {
     site,
@@ -77,6 +77,61 @@ const timelineItemAnim: Variants = {
     hidden: { opacity: 0, x: 46, y: 20 },
     show: { opacity: 1, x: 0, y: 0, transition: { duration: 0.55 } },
 };
+
+/* ---------- resume modal ---------- */
+function ResumeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+    // Put the file in /public
+    // Use relative URL (no leading "/") to behave better with basePath deployments.
+    const resumeUrl = "updatedDhirajresume1.pdf";
+
+    return (
+        <AnimatePresence>
+            {open && (
+                <motion.div
+                    className="fixed inset-0 z-[100] grid place-items-center bg-black/70 px-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={onClose}
+                >
+                    <motion.div
+                        className="w-full max-w-3xl overflow-hidden rounded-3xl border border-white/10 bg-[#070A0F]"
+                        initial={{ opacity: 0, y: 18, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 12, scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between border-b border-white/10 p-4">
+                            <div className="text-sm font-semibold text-white/85">Resume preview</div>
+
+                            <div className="flex items-center gap-2">
+                                <a
+                                    href={resumeUrl}
+                                    download
+                                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10"
+                                >
+                                    Download
+                                </a>
+
+                                <button
+                                    onClick={onClose}
+                                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="h-[70vh] bg-black">
+                            <iframe src={resumeUrl} title="Resume preview" className="h-full w-full" />
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+}
 
 /* ---------- shared UI ---------- */
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -251,6 +306,7 @@ function TimelineItem({ title, meta }: { title: string; meta: string }) {
 
 export default function Page() {
     const allProjects: PortfolioProject[] = [...projects, ...moreProjects];
+    const [resumeOpen, setResumeOpen] = React.useState(false);
 
     return (
         <div className="min-h-screen bg-[#070A0F] text-white">
@@ -325,10 +381,7 @@ export default function Page() {
                         <TechTicker />
 
                         <div className="flex flex-wrap gap-3 pt-2">
-                            <a
-                                className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm hover:bg-white/10"
-                                href="#projects"
-                            >
+                            <a className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm hover:bg-white/10" href="#projects">
                                 View projects
                             </a>
 
@@ -348,14 +401,14 @@ export default function Page() {
                                 LinkedIn
                             </a>
 
-                            <a
+                            {/* Resume button -> opens preview modal */}
+                            <button
+                                onClick={() => setResumeOpen(true)}
                                 className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm hover:bg-white/10"
-                                href="/updatedresume1.pdf"
-                                download
                             >
                                 <Download size={16} />
                                 Download Resume
-                            </a>
+                            </button>
                         </div>
 
                         <div className="flex flex-wrap gap-4 pt-3 text-sm text-white/75">
@@ -613,12 +666,13 @@ export default function Page() {
                             </a>
                         </div>
 
-                        <div className="mt-6 text-xs text-white/50">
-                            © {new Date().getFullYear()} {site.name}
-                        </div>
+                        <div className="mt-6 text-xs text-white/50">© {new Date().getFullYear()} {site.name}</div>
                     </motion.div>
                 </motion.section>
             </main>
+
+            {/* Resume Preview Modal (renders once) */}
+            <ResumeModal open={resumeOpen} onClose={() => setResumeOpen(false)} />
         </div>
     );
 }
