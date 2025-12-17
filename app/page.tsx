@@ -15,6 +15,21 @@ import {
     type PortfolioProject,
 } from "../data/portfolio";
 
+/**
+ * GitHub Pages runs the site under /dhiraj-parida-portfolio
+ * Local dev runs it under /
+ */
+const BASE_PATH = process.env.NODE_ENV === "production" ? "/dhiraj-parida-portfolio" : "";
+
+/** Prefix local public assets with basePath (keeps http/https URLs unchanged). */
+function withBasePath(src: string) {
+    if (!src) return src;
+    if (src.startsWith("http://") || src.startsWith("https://")) return src;
+    if (src.startsWith(BASE_PATH + "/")) return src;
+    if (src.startsWith("/")) return `${BASE_PATH}${src}`;
+    return `${BASE_PATH}/${src}`;
+}
+
 /* ---------- motion variants (typed) ---------- */
 const heroVariant: Variants = {
     hidden: { opacity: 0, y: 40 },
@@ -80,9 +95,8 @@ const timelineItemAnim: Variants = {
 
 /* ---------- resume modal ---------- */
 function ResumeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-    // Put the file in /public
-    // Use relative URL (no leading "/") to behave better with basePath deployments.
-    const resumeUrl = "updatedDhirajresume1.pdf";
+    // File must exist in /public
+    const resumeUrl = withBasePath("/updatedDhirajresume1.pdf");
 
     return (
         <AnimatePresence>
@@ -252,7 +266,12 @@ function ProjectCard({ p }: { p: PortfolioProject }) {
                     <div className="flex items-start gap-3 min-w-0">
                         {p.logo && (
                             <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#070A0F]">
-                                <Image src={p.logo} alt={`${p.name} logo`} fill className="object-contain p-2" />
+                                <Image
+                                    src={withBasePath(p.logo)}
+                                    alt={`${p.name} logo`}
+                                    fill
+                                    className="object-contain p-2"
+                                />
                             </div>
                         )}
 
@@ -432,7 +451,13 @@ export default function Page() {
                             >
                                 <div className="rounded-3xl bg-gradient-to-r from-indigo-500 via-cyan-400 to-emerald-400 p-[3px] shadow-[0_0_45px_rgba(6,182,212,0.18)]">
                                     <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-white/10 bg-[#070A0F]">
-                                        <Image src="/dhirajphotoDP.png" alt="Profile photo" fill className="object-cover" priority />
+                                        <Image
+                                            src={withBasePath("/dhirajphotoDP.png")}
+                                            alt="Profile photo"
+                                            fill
+                                            className="object-cover"
+                                            priority
+                                        />
                                     </div>
                                 </div>
 
@@ -666,7 +691,9 @@ export default function Page() {
                             </a>
                         </div>
 
-                        <div className="mt-6 text-xs text-white/50">© {new Date().getFullYear()} {site.name}</div>
+                        <div className="mt-6 text-xs text-white/50">
+                            © {new Date().getFullYear()} {site.name}
+                        </div>
                     </motion.div>
                 </motion.section>
             </main>
